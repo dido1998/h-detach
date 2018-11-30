@@ -25,7 +25,7 @@ parser.add_argument('--lr', type=float, default=0.001, help='learning rate')
 parser.add_argument('--anneal-p', type=int, default=40, help='number of epochs before total number of epochs for setting p-detach to 0')
 
 args = parser.parse_args()
-log_dir = '/gdrive/My Drive/'+args.save_dir + '/'
+log_dir = '/content/gdrive/My Drive/'+args.save_dir + '/'
 
 
 

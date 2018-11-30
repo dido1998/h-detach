@@ -24,7 +24,12 @@ def generate_copying_sequence(T):
 	for i in range(10):
 		y.append([items[ind[i]]])
 
+	print(len(x))
 	x = np.array(x)
 	y = np.array(y)
 
-	return tensor([x]), torch.LongTensor([y])
+	return tensor([x]), torch.LongTensor([y])	
+
+
+if __name__=='__main__':
+	generate_copying_sequence(300)
