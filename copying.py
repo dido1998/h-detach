@@ -13,9 +13,9 @@ import os
 import glob
 import tqdm 
 parser = argparse.ArgumentParser(description='Copying Task')
-parser.add_argument('--p-detach', type=float, default=-1.0, help='probability of detaching each timestep')
+parser.add_argument('--p-detach', type=float, default=0.5, help='probability of detaching each timestep')
 parser.add_argument('--lstm-size', type=int, default=128, help='hidden size of LSTM')
-parser.add_argument('--save-dir', type=str, default='default', help='save dir of the results')
+parser.add_argument('--save-dir', type=str, default='h_detach', help='save dir of the results')
 parser.add_argument('--seed', type=int, default=3, help='seed value')
 parser.add_argument('--clip', type=float, default=1.0, help='gradient clipping norm')
 parser.add_argument('--T', type=int, default=300, help='T')
@@ -25,7 +25,7 @@ parser.add_argument('--lr', type=float, default=0.001, help='learning rate')
 parser.add_argument('--anneal-p', type=int, default=40, help='number of epochs before total number of epochs for setting p-detach to 0')
 
 args = parser.parse_args()
-log_dir = '/directory/to/save/experiments/'+args.save_dir + '/'
+log_dir = '/gdrive/My Drive/'+args.save_dir + '/'
 
 
 
