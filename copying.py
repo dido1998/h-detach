@@ -162,9 +162,9 @@ def train_model(model, epochs, criterion, optimizer):
 			print('Saving best model..')
 			state = {
 	        'net': model,
-	        'hid_size': hid_size
-	        'epoch':epoch
-	    	'ctr':ctr
+	        'hid_size': hid_size,
+	        'epoch':epoch,
+	    	'ctr':ctr,
 	    	'best_acc':best_acc
 	    	}
 			with open(log_dir + '/best_model.pt', 'wb') as f:
