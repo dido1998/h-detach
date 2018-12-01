@@ -3,6 +3,7 @@ import math
 import sys
 import numpy as np
 import torch.nn as nn
+import pickle
 from lstm_cell import LSTM
 import torch.nn.functional as F
 import torch.optim as optim
@@ -110,7 +111,8 @@ def train_model(model, epochs, criterion, optimizer):
 	train_x, train_y = train_x.to(device), train_y.to(device)
 	test_x, test_y = test_x.to(device), test_y.to(device)
 	global best_acc, ctr, start_epoch
-
+	losslist=[]
+	acc=[]
 	iters = -1
 	p_detach=0.
 	for epoch in range(start_epoch, epochs):
@@ -148,6 +150,7 @@ def train_model(model, epochs, criterion, optimizer):
 
 			loss_val = loss.item()
 			writer.add_scalar('/hdetach:train_loss', loss_val, ctr)
+			losslist.append((loss_val,ctr))
 			ctr += 1
 
 
@@ -160,16 +163,24 @@ def train_model(model, epochs, criterion, optimizer):
 			state = {
 	        'net': model,
 	        'hid_size': hid_size
+	        'epoch':epoch
+	    	'ctr':ctr
+	    	'best_acc':best_acc
 	    	}
 			with open(log_dir + '/best_model.pt', 'wb') as f:
 				torch.save(state, f)
 		writer.add_scalar('/hdetach:val_acc', accuracy, epoch)
-
+		acc.append((accuracy,epoch))
+		with open(log_dir+'/lossstats.pickle','wb') as f:
+			pickle.dump(losslist,f)
+		with open(log_dir+'/accstats.pickle','wb') as f:
+			pickle.dump(acc,f)
 
 
 
 print('==> Building model..')
 net = Net(inp_size, hid_size, out_size).to(device)
+net.load_state_dict(torch.load(log_dir+'/best_model.pt'))
 criterion = nn.CrossEntropyLoss()
 
 start_epoch=0
