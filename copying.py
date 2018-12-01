@@ -180,7 +180,8 @@ def train_model(model, epochs, criterion, optimizer):
 
 print('==> Building model..')
 net = Net(inp_size, hid_size, out_size).to(device)
-net.load_state_dict(torch.load(log_dir+'/best_model.pt'))
+modelstate=torch.load(log_dir+'/best_model.pt')
+net.load_state_dict(modelstate['net'])
 criterion = nn.CrossEntropyLoss()
 
 start_epoch=0
