@@ -186,7 +186,7 @@ print('==> Building model..')
 net = Net(inp_size, hid_size, out_size).to(device)
 modelstate=torch.load(log_dir+'/best_model.pt')
 print(modelstate)
-net.load_state_dict(modelstate['net'])
+net.load_state_dict(modelstate['net'].state_dict())
 criterion = nn.CrossEntropyLoss()
 
 start_epoch.load_state_dict(modelstate['epoch'])
