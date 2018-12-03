@@ -117,12 +117,12 @@ def train_model(model, epochs, criterion, optimizer):
 		acc=pickle.load(f)
 	with open(log_dir+'/lossstats.pickle','rb') as f:
 		losslist=pickle.load(f)
-	start_epoch=len(acc)
+	start_epoch=len(acc)-1
 	best_acc=0
 	for i in acc:
 		if i[0]>best_acc:
 			best_acc=i[0]
-	ctr=len(losslist)
+	ctr=len(losslist)-1
 	iters = -1
 	p_detach=0.
 	for epoch in range(start_epoch, epochs):
