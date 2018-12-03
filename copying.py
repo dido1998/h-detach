@@ -113,9 +113,9 @@ def train_model(model, epochs, criterion, optimizer):
 	global best_acc, ctr, start_epoch
 	losslist=[]
 	acc=[]
-	with open(log_dir+'/accstats.pickle') as f:
+	with open(log_dir+'/accstats.pickle','rb') as f:
 		acc=pickle.load(f)
-	with open(log_dir+'/lossstats.pickle') as f:
+	with open(log_dir+'/lossstats.pickle','rb') as f:
 		losslist=pickle.load(f)
 	start_epoch=len(acc)
 	best_acc=0
