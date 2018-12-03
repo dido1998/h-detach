@@ -113,6 +113,10 @@ def train_model(model, epochs, criterion, optimizer):
 	global best_acc, ctr, start_epoch
 	losslist=[]
 	acc=[]
+	with open(log_dir+'/accstats.pickle') as f:
+		acc=pickle.load(f)
+	with open(log_dir+'/lossstats.pickle') as f:
+		losslist=pickle.load(f)
 	iters = -1
 	p_detach=0.
 	for epoch in range(start_epoch, epochs):
@@ -180,13 +184,13 @@ def train_model(model, epochs, criterion, optimizer):
 
 print('==> Building model..')
 net = Net(inp_size, hid_size, out_size).to(device)
-#modelstate=torch.load(log_dir+'/best_model.pt')
-#net.load_state_dict(modelstate['net'])
+modelstate=torch.load(log_dir+'/best_model.pt')
+net.load_state_dict(modelstate['net'])
 criterion = nn.CrossEntropyLoss()
 
-start_epoch=0
-ctr=0
-best_acc=0
+start_epoch.load_state_dict(modelstate['epoch'])
+ctr.load_state_dict(modelstate['ctr'])
+best_acc.load_state_dict('best_acc')
 
 
 optimizer = optim.Adam(net.parameters(), lr=lr)
