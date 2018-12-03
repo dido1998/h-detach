@@ -117,6 +117,12 @@ def train_model(model, epochs, criterion, optimizer):
 		acc=pickle.load(f)
 	with open(log_dir+'/lossstats.pickle') as f:
 		losslist=pickle.load(f)
+	start_epoch=len(acc)
+	best_acc=0
+	for i in acc:
+		if i[0]>best_acc:
+			best_acc=i[0]
+	ctr=len(losslist)
 	iters = -1
 	p_detach=0.
 	for epoch in range(start_epoch, epochs):
@@ -188,14 +194,11 @@ modelstate=torch.load(log_dir+'/best_model.pt')
 print(modelstate)
 net.load_state_dict(modelstate['net'].state_dict())
 criterion = nn.CrossEntropyLoss()
-
-
-start_epoch=len(acc)
+start_epoch=0
 best_acc=0
-for i in acc:
-	if i[0]>best_acc:
-		best_acc=i[0]
-ctr=len(losslist)
+ctr=0
+
+
 
 optimizer = optim.Adam(net.parameters(), lr=lr)
 
