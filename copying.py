@@ -188,16 +188,14 @@ modelstate=torch.load(log_dir+'/best_model.pt')
 print(modelstate)
 net.load_state_dict(modelstate['net'].state_dict())
 criterion = nn.CrossEntropyLoss()
-start_epoch_t=torch.zeros(1)
-ctr_t=torch.zeros(1)
-best_acc_t=torch.zeros(1)
-start_epoch_t.load_state_dict(modelstate['epoch'])
-ctr_t.load_state_dict(modelstate['ctr'])
-best_acc_t.load_state_dict(model_state['best_acc'])
 
-start_epoch=start_epoch_t.item()
-best_acc=best_acc_t.item()
-ctr=ctr_t.item()
+
+start_epoch=len(acc)
+best_acc=0
+for i in acc:
+	if i[0]>best_acc:
+		best_acc=i[0]
+ctr=len(losslist)
 
 optimizer = optim.Adam(net.parameters(), lr=lr)
 
