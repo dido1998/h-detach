@@ -197,7 +197,7 @@ best_acc_t.load_state_dict(model_state['best_acc'])
 
 start_epoch=start_epoch_t.item()
 best_acc=best_acc_t.item()
-ctr_t=ctr_t.item()
+ctr=ctr_t.item()
 
 optimizer = optim.Adam(net.parameters(), lr=lr)
 
