@@ -25,7 +25,7 @@ parser.add_argument('--batch_size', type=int, default=100, help='batch size')
 parser.add_argument('--n_epochs', type=int, default=600, help='number of epochs')
 parser.add_argument('--lr', type=float, default=0.001, help='learning rate')
 parser.add_argument('--anneal-p', type=int, default=40, help='number of epochs before total number of epochs for setting p-detach to 0')
-parser.add_argument('--loadsaved',type=bool,default=False)
+parser.add_argument('--loadsaved',type=bool,default=False,help='load incompletee model?')
 args = parser.parse_args()
 log_dir = args.save_dir
 
