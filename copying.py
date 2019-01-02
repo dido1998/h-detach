@@ -25,7 +25,7 @@ parser.add_argument('--batch_size', type=int, default=100, help='batch size')
 parser.add_argument('--n_epochs', type=int, default=600, help='number of epochs')
 parser.add_argument('--lr', type=float, default=0.001, help='learning rate')
 parser.add_argument('--anneal-p', type=int, default=40, help='number of epochs before total number of epochs for setting p-detach to 0')
-parser.add_argument('--loadsaved',type=bool,default=False)
+parser.add_argument('--loadsaved',type=int,default=0)
 args = parser.parse_args()
 log_dir = args.save_dir
 
@@ -117,7 +117,7 @@ def train_model(model, epochs, criterion, optimizer):
 	acc=[]
 	start_epoch=0
 	ctr=0
-	if args.loadsaved==True:
+	if args.loadsaved==1:
 		with open(log_dir+'/accstats.pickle','rb') as f:
 			acc=pickle.load(f)
 		with open(log_dir+'/lossstats.pickle','rb') as f:
@@ -196,7 +196,7 @@ def train_model(model, epochs, criterion, optimizer):
 
 print('==> Building model..')
 net = Net(inp_size, hid_size, out_size).to(device)
-if args.loadsaved==True:
+if args.loadsaved==1:
 	modelstate=torch.load(log_dir+'/best_model.pt')
 	net.load_state_dict(modelstate['net'].state_dict())
 criterion = nn.CrossEntropyLoss()
