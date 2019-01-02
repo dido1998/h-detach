@@ -54,9 +54,9 @@ valid_sampler = torch.utils.data.sampler.SubsetRandomSampler(range(50000, 60000)
 
 trainset = T.datasets.MNIST(root='./MNIST', train=True, download=True, transform=T.transforms.ToTensor())
 testset = T.datasets.MNIST(root='./MNIST', train=False, download=True, transform=T.transforms.ToTensor())
-trainloader = torch.utils.data.DataLoader(trainset, batch_size=100, shuffle=False, sampler=train_sampler, num_workers=2)
-validloader = torch.utils.data.DataLoader(trainset, batch_size=100, shuffle=False, sampler=valid_sampler, num_workers=2)
-testloader = torch.utils.data.DataLoader(testset, batch_size=100, num_workers=2)
+trainloader = torch.utils.data.DataLoader(trainset, batch_size=args.batch_size, shuffle=False, sampler=train_sampler, num_workers=2)
+validloader = torch.utils.data.DataLoader(trainset, batch_size=args.batch_size, shuffle=False, sampler=valid_sampler, num_workers=2)
+testloader = torch.utils.data.DataLoader(testset, batch_size=args.batch_size, num_workers=2)
 
 n_epochs = args.n_epochs
 batch_size = args.batch_size
