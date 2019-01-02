@@ -9,24 +9,25 @@ import torch.nn.functional as F
 import torch.optim as optim
 from generator import generate_copying_sequence
 from tensorboardX import SummaryWriter
+#from h_detach_helper import h_detach
 import argparse
 import os
 import glob
 import tqdm 
 parser = argparse.ArgumentParser(description='Copying Task')
-parser.add_argument('--p-detach', type=float, default=0.5, help='probability of detaching each timestep')
+parser.add_argument('--p-detach', type=float, default=0, help='probability of detaching each timestep')
 parser.add_argument('--lstm-size', type=int, default=128, help='hidden size of LSTM')
-parser.add_argument('--save-dir', type=str, default='h_detach', help='save dir of the results')
+parser.add_argument('--save-dir', type=str, default='vanilla_300_copying', help='save dir of the results')
 parser.add_argument('--seed', type=int, default=3, help='seed value')
 parser.add_argument('--clip', type=float, default=1.0, help='gradient clipping norm')
-parser.add_argument('--T', type=int, default=100, help='T')
+parser.add_argument('--T', type=int, default=300, help='T')
 parser.add_argument('--batch_size', type=int, default=100, help='batch size')
 parser.add_argument('--n_epochs', type=int, default=600, help='number of epochs')
 parser.add_argument('--lr', type=float, default=0.001, help='learning rate')
 parser.add_argument('--anneal-p', type=int, default=40, help='number of epochs before total number of epochs for setting p-detach to 0')
-
+parser.add_argument('--loadsaved',type=bool,default=False)
 args = parser.parse_args()
-log_dir = '/content/gdrive/My Drive/'+args.save_dir + '/'
+log_dir = args.save_dir
 
 
 
@@ -72,13 +73,14 @@ class Net(nn.Module):
 
 	def __init__(self, inp_size, hid_size, out_size):
 		super().__init__()
+		#self.lstm=h_detach(inp_size,hid_size,args.p_detach)
 		self.lstm = LSTM(inp_size, hid_size)
 		self.fc1 = nn.Linear(hid_size, out_size)
 
 	def forward(self, x, state):
-		x, new_state = self.lstm(x, state)
+		x, (h,c) = self.lstm(x, state)
 		x = self.fc1(x)
-		return x, new_state
+		return x,(h,c)
 
 def test_model(model, test_x, test_y, criterion):
 	loss = 0
@@ -113,16 +115,20 @@ def train_model(model, epochs, criterion, optimizer):
 	global best_acc, ctr, start_epoch
 	losslist=[]
 	acc=[]
-	with open(log_dir+'/accstats.pickle','rb') as f:
-		acc=pickle.load(f)
-	with open(log_dir+'/lossstats.pickle','rb') as f:
-		losslist=pickle.load(f)
-	start_epoch=len(acc)-1
-	best_acc=0
-	for i in acc:
-		if i[0]>best_acc:
-			best_acc=i[0]
-	ctr=len(losslist)-1
+	start_epoch=0
+	ctr=0
+	if args.loadsaved
+		with open(log_dir+'/accstats.pickle','rb') as f:
+			acc=pickle.load(f)
+		with open(log_dir+'/lossstats.pickle','rb') as f:
+			losslist=pickle.load(f)
+		start_epoch=len(acc)-1
+		best_acc=0
+		for i in acc:
+			if i[0]>best_acc:
+				best_acc=i[0]
+		ctr=len(losslist)-1
+	
 	iters = -1
 	p_detach=0.
 	for epoch in range(start_epoch, epochs):
@@ -190,9 +196,9 @@ def train_model(model, epochs, criterion, optimizer):
 
 print('==> Building model..')
 net = Net(inp_size, hid_size, out_size).to(device)
-modelstate=torch.load(log_dir+'/best_model.pt')
-print(modelstate)
-net.load_state_dict(modelstate['net'].state_dict())
+if args.loadsaved:
+	modelstate=torch.load(log_dir+'/best_model.pt')
+	net.load_state_dict(modelstate['net'].state_dict())
 criterion = nn.CrossEntropyLoss()
 start_epoch=0
 best_acc=0

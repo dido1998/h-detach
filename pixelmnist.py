@@ -12,11 +12,12 @@ import argparse
 import os
 import glob
 import tqdm
-
+import pickle
+from torch.autograd import Variable
 parser = argparse.ArgumentParser(description='sequential MNIST parameters')
-parser.add_argument('--p-detach', type=float, default=-1.0, help='probability of detaching each timestep')
-parser.add_argument('--permute', action='store_true', default=False, help='pMNIST or normal MNIST')
-parser.add_argument('--save-dir', type=str, default='default', help='save directory')
+parser.add_argument('--p-detach', type=float, default=0.5, help='probability of detaching each timestep')
+parser.add_argument('--permute', action='store_true', default=True, help='pMNIST or normal MNIST')
+parser.add_argument('--save-dir', type=str, default='pmnist_0.5_h_detach', help='save directory')
 parser.add_argument('--lstm-size', type=int, default=100, help='width of LSTM')
 parser.add_argument('--seed', type=int, default=400, help='seed value')
 parser.add_argument('--lr', type=float, default=0.001, help='learning rate for adam')
@@ -27,8 +28,13 @@ parser.add_argument('--anneal-p', type=int, default=40, help='number of epochs b
 
 
 args = parser.parse_args()
-log_dir = '/directory/to/save/experiments/'+args.save_dir + '/'
+log_dir = args.save_dir
 
+grads = {}
+def save_grad(name):
+    def hook(grad):
+        grads[name] = grad
+    return hook
 
 # if os.path.isdir(log_dir):
 # 	if len(glob.glob(log_dir+'events.*'))>0:
@@ -67,13 +73,16 @@ class Net(nn.Module):
 	
 	def __init__(self, inp_size, hid_size, out_size):
 		super().__init__()
-		self.lstm = LSTM(inp_size, hid_size)
+		#self.lstm = h_detach(inp_size, hid_size,args.p_detach)
+		self.lstm=LSTM(inp_size,hid_size)
 		self.fc1 = nn.Linear(hid_size, out_size)
 
 	def forward(self, x, state):
-		x, new_state = self.lstm(x, state)
-		x = self.fc1(x)
-		return x, new_state	
+		x1,(h,c) = self.lstm(x, state)
+		#x1=Variable(x1,requires_grad=True)
+		x2 = self.fc1(x1)
+		
+		return x2,h,c
 
 def test_model(model, loader, criterion, order):
 	
@@ -89,10 +98,10 @@ def test_model(model, loader, criterion, order):
 			c = torch.zeros(batch_size, hid_size).to(device)
 
 			for j in order:
-				output, (h, c) = model(test_x[j], (h, c))
+				 outputs,h, c = model(test_x[j], (h, c))
 
-			loss += criterion(output, test_y).item()
-			preds = torch.argmax(output, dim=1)
+			loss += criterion(outputs, test_y).item()
+			preds = torch.argmax(outputs, dim=1)
 			correct = preds == test_y
 			accuracy += correct.sum().item()
 
@@ -101,7 +110,8 @@ def test_model(model, loader, criterion, order):
 	return loss, accuracy
 
 def train_model(model, epochs, criterion, optimizer):
-
+	acc=[]
+	lossstats=[]
 	best_acc = 0.0
 	ctr = 0	
 	global lr
@@ -111,7 +121,18 @@ def train_model(model, epochs, criterion, optimizer):
 		order = np.arange(T)
 
 	test_acc = 0
-	for epoch in range(epochs):
+	#with open(log_dir+'/accstats.pickle','rb') as f:
+	#	acc=pickle.load(f)
+	#with open(log_dir+'/lossstats.pickle','rb') as f:
+	#	losslist=pickle.load(f)
+	start_epoch=0#len(acc)-1
+	best_acc=0
+	#for i in acc:
+	#	if i[0]>best_acc:
+	#		best_acc=i[0]
+	ctr=0#len(losslist)-1
+	
+	for epoch in range(start_epoch,epochs):
 		if epoch>epochs-args.anneal_p:
 			args.p_detach=-1
 		print('epoch ' + str(epoch + 1))
@@ -134,19 +155,23 @@ def train_model(model, epochs, criterion, optimizer):
 					val = np.random.random(size=1)[0]
 					if val <= args.p_detach:
 						h = h.detach()
-				output, (h, c) = model(inp_x[i], (h, c))
-
+				output, h, c = model(inp_x[i].contiguous(), (h, c))
+			#print('-------------------------')
 			loss += criterion(output, inp_y)
 
 			model.zero_grad()
+			#print(type(output))
 			loss.backward()
+			#print(grads['x1'])
 			norms = nn.utils.clip_grad_norm_(model.parameters(), clipval)
 
 			optimizer.step()
 
 
 			loss_val = loss.item()
+			#print(loss_val)
 			epoch_loss += loss_val
+
 			# print(z, loss_val)
 			# writer.add_scalar('/hdetach:loss', loss_val, ctr)
 			ctr += 1
@@ -154,11 +179,29 @@ def train_model(model, epochs, criterion, optimizer):
 		v_loss, v_accuracy = test_model(model, validloader, criterion, order)
 		if best_acc < v_accuracy:
 			best_acc = v_accuracy
+			print('best validation accuracy ' + str(best_acc))
+			print('Saving best model..')
+			state = {
+	        'net': model,
+	        'hid_size': hid_size,
+	        'epoch':epoch,
+	    	'ctr':ctr,
+	    	'best_acc':best_acc
+	    	}
+			with open(log_dir + '/best_model.pt', 'wb') as f:
+				torch.save(state, f)
 			_, test_acc = test_model(model, testloader, criterion, order)
 		print('epoch_loss: {}, val accuracy: {} '.format(epoch_loss/(iter_ctr), v_accuracy))
+		lossstats.append((ctr,epoch_loss/iter_ctr))
+		acc.append((epoch,v_accuracy))
+		with open(log_dir+'/lossstats.pickle','wb') as f:
+			pickle.dump(lossstats,f)
+		with open(log_dir+'/accstats.pickle','wb') as f:
+			pickle.dump(acc,f)
 		writer.add_scalar('/hdetach:val_acc', v_accuracy, epoch)
 		writer.add_scalar('/hdetach:epoch_loss', epoch_loss/(iter_ctr), epoch)
 
+		#print(model.lstm.weights)
 	print('best val accuracy: {} '.format( best_acc))
 	writer.add_scalar('/hdetach:best_val_acc', best_acc, 0)
 	print('test accuracy: {} '.format( test_acc))
@@ -166,6 +209,9 @@ def train_model(model, epochs, criterion, optimizer):
 
 device = torch.device('cuda')
 net = Net(inp_size, hid_size, out_size).to(device)
+#modelstate=torch.load(log_dir+'/best_model.pt')
+#net.load_state_dict(modelstate['net'].state_dict())
+
 criterion = nn.CrossEntropyLoss()
 optimizer = optim.Adam(net.parameters(), lr=lr)
 
