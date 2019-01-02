@@ -117,7 +117,7 @@ def train_model(model, epochs, criterion, optimizer):
 	acc=[]
 	start_epoch=0
 	ctr=0
-	if args.loadsaved:
+	if args.loadsaved==True:
 		with open(log_dir+'/accstats.pickle','rb') as f:
 			acc=pickle.load(f)
 		with open(log_dir+'/lossstats.pickle','rb') as f:
@@ -196,7 +196,7 @@ def train_model(model, epochs, criterion, optimizer):
 
 print('==> Building model..')
 net = Net(inp_size, hid_size, out_size).to(device)
-if args.loadsaved:
+if args.loadsaved==True:
 	modelstate=torch.load(log_dir+'/best_model.pt')
 	net.load_state_dict(modelstate['net'].state_dict())
 criterion = nn.CrossEntropyLoss()
