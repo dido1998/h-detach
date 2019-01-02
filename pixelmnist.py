@@ -17,7 +17,7 @@ from torch.autograd import Variable
 parser = argparse.ArgumentParser(description='sequential MNIST parameters')
 parser.add_argument('--p-detach', type=float, default=0.5, help='probability of detaching each timestep')
 parser.add_argument('--permute', action='store_true', default=True, help='pMNIST or normal MNIST')
-parser.add_argument('--save-dir', type=str, default='pmnist_0.5_h_detach', help='save directory')
+parser.add_argument('--save-dir', type=str, default='mnist_0.25_c_detach', help='save directory')
 parser.add_argument('--lstm-size', type=int, default=100, help='width of LSTM')
 parser.add_argument('--seed', type=int, default=400, help='seed value')
 parser.add_argument('--lr', type=float, default=0.001, help='learning rate for adam')
@@ -25,6 +25,7 @@ parser.add_argument('--clipval', type=float, default=1., help='gradient clipping
 parser.add_argument('--batch_size', type=int, default=100, help='batch size')
 parser.add_argument('--n_epochs', type=int, default=200, help='number of epochs')
 parser.add_argument('--anneal-p', type=int, default=40, help='number of epochs before total number of epochs for setting p-detach to 0')
+parser.add_argument('--loadsaved',type=int,default=0)
 
 
 args = parser.parse_args()
@@ -121,17 +122,20 @@ def train_model(model, epochs, criterion, optimizer):
 		order = np.arange(T)
 
 	test_acc = 0
-	#with open(log_dir+'/accstats.pickle','rb') as f:
-	#	acc=pickle.load(f)
-	#with open(log_dir+'/lossstats.pickle','rb') as f:
-	#	losslist=pickle.load(f)
-	start_epoch=0#len(acc)-1
-	best_acc=0
-	#for i in acc:
-	#	if i[0]>best_acc:
-	#		best_acc=i[0]
-	ctr=0#len(losslist)-1
-	
+	start_epoch=0
+	ctr=0
+	if args.loadsaved==1:
+		with open(log_dir+'/accstats.pickle','rb') as f:
+			acc=pickle.load(f)
+		with open(log_dir+'/lossstats.pickle','rb') as f:
+			losslist=pickle.load(f)
+		start_epoch=len(acc)-1
+		best_acc=0
+		for i in acc:
+			if i[0]>best_acc:
+				best_acc=i[0]
+		ctr=len(losslist)-1
+		
 	for epoch in range(start_epoch,epochs):
 		if epoch>epochs-args.anneal_p:
 			args.p_detach=-1
@@ -154,7 +158,7 @@ def train_model(model, epochs, criterion, optimizer):
 				if args.p_detach >0:
 					val = np.random.random(size=1)[0]
 					if val <= args.p_detach:
-						h = h.detach()
+						c = c.detach()
 				output, h, c = model(inp_x[i].contiguous(), (h, c))
 			#print('-------------------------')
 			loss += criterion(output, inp_y)
@@ -208,9 +212,11 @@ def train_model(model, epochs, criterion, optimizer):
 	writer.add_scalar('/hdetach:test_acc', test_acc, 0)
 
 device = torch.device('cuda')
+
 net = Net(inp_size, hid_size, out_size).to(device)
-#modelstate=torch.load(log_dir+'/best_model.pt')
-#net.load_state_dict(modelstate['net'].state_dict())
+if args.loadsaved==1:
+	modelstate=torch.load(log_dir+'/best_model.pt')
+	net.load_state_dict(modelstate['net'].state_dict())
 
 criterion = nn.CrossEntropyLoss()
 optimizer = optim.Adam(net.parameters(), lr=lr)
