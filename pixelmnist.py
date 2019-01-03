@@ -16,7 +16,7 @@ import pickle
 from torch.autograd import Variable
 parser = argparse.ArgumentParser(description='sequential MNIST parameters')
 parser.add_argument('--p-detach', type=float, default=0.5, help='probability of detaching each timestep')
-parser.add_argument('--permute', action='store_true', default=True, help='pMNIST or normal MNIST')
+parser.add_argument('--permute', action='store_true', default=False, help='pMNIST or normal MNIST')
 parser.add_argument('--save-dir', type=str, default='mnist_0.25_c_detach', help='save directory')
 parser.add_argument('--lstm-size', type=int, default=100, help='width of LSTM')
 parser.add_argument('--seed', type=int, default=400, help='seed value')
