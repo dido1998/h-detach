@@ -158,7 +158,7 @@ def train_model(model, epochs, criterion, optimizer):
 				if args.p_detach >0:
 					val = np.random.random(size=1)[0]
 					if val <= args.p_detach:
-						c = c.detach()
+						h = h.detach()
 				output, h, c = model(inp_x[i].contiguous(), (h, c))
 			#print('-------------------------')
 			loss += criterion(output, inp_y)
