@@ -154,7 +154,7 @@ def train_model(model, epochs, criterion, optimizer):
 					p_detach = args.p_detach	
 					rand_val = np.random.random(size=1)[0]
 					if rand_val <= p_detach:
-						h = h.detach()
+						c = c.detach()
 				output, (h, c) = model(inp_x[i], (h, c))
 				loss += criterion(output, inp_y[i].squeeze(1))
 
