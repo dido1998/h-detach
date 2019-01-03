@@ -16,13 +16,13 @@ import pickle
 from torch.autograd import Variable
 parser = argparse.ArgumentParser(description='sequential MNIST parameters')
 parser.add_argument('--p-detach', type=float, default=0.5, help='probability of detaching each timestep')
-parser.add_argument('--permute', action='store_true', default=True, help='pMNIST or normal MNIST')
-parser.add_argument('--save-dir', type=str, default='mnist_0.25_c_detach', help='save directory')
+parser.add_argument('--permute', type=int, default=1, help='pMNIST or normal MNIST')
+parser.add_argument('--save-dir', type=str, default='pmnist_0.5_h_detach', help='save directory')
 parser.add_argument('--lstm-size', type=int, default=100, help='width of LSTM')
 parser.add_argument('--seed', type=int, default=400, help='seed value')
 parser.add_argument('--lr', type=float, default=0.001, help='learning rate for adam')
 parser.add_argument('--clipval', type=float, default=1., help='gradient clipping value')
-parser.add_argument('--batch_size', type=int, default=100, help='batch size')
+parser.add_argument('--batch_size', type=int, default=500, help='batch size')
 parser.add_argument('--n_epochs', type=int, default=200, help='number of epochs')
 parser.add_argument('--anneal-p', type=int, default=40, help='number of epochs before total number of epochs for setting p-detach to 0')
 parser.add_argument('--loadsaved',type=int,default=0)
@@ -116,7 +116,7 @@ def train_model(model, epochs, criterion, optimizer):
 	best_acc = 0.0
 	ctr = 0	
 	global lr
-	if args.permute:
+	if args.permute==1:
 		order = np.random.permutation(T)
 	else:
 		order = np.arange(T)
@@ -158,7 +158,7 @@ def train_model(model, epochs, criterion, optimizer):
 				if args.p_detach >0:
 					val = np.random.random(size=1)[0]
 					if val <= args.p_detach:
-						c = c.detach()
+						h= h.detach()
 				output, h, c = model(inp_x[i].contiguous(), (h, c))
 			#print('-------------------------')
 			loss += criterion(output, inp_y)
@@ -167,6 +167,7 @@ def train_model(model, epochs, criterion, optimizer):
 			#print(type(output))
 			loss.backward()
 			#print(grads['x1'])
+
 			norms = nn.utils.clip_grad_norm_(model.parameters(), clipval)
 
 			optimizer.step()
