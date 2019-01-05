@@ -16,6 +16,7 @@ import pickle
 from torch.autograd import Variable
 parser = argparse.ArgumentParser(description='sequential MNIST parameters')
 parser.add_argument('--p-detach', type=float, default=0.5, help='probability of detaching each timestep')
+<<<<<<< HEAD
 parser.add_argument('--permute', type=int, default=1, help='pMNIST or normal MNIST')
 parser.add_argument('--save-dir', type=str, default='pmnist_0.5_h_detach', help='save directory')
 parser.add_argument('--lstm-size', type=int, default=100, help='width of LSTM')
@@ -158,7 +159,7 @@ def train_model(model, epochs, criterion, optimizer):
 				if args.p_detach >0:
 					val = np.random.random(size=1)[0]
 					if val <= args.p_detach:
-						h= h.detach()
+						h = h.detach()
 				output, h, c = model(inp_x[i].contiguous(), (h, c))
 			#print('-------------------------')
 			loss += criterion(output, inp_y)
