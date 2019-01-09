@@ -1,6 +1,6 @@
 # h-detach
 
-This repository contains the code used for the paper [h-detach: Modifying the LSTM Gradient Towards Better Optimization](https://arxiv.org/abs/1810.03023) 
+This repository contains the code used to reproduce the paper [h-detach: Modifying the LSTM Gradient Towards Better Optimization](https://arxiv.org/abs/1810.03023) 
 
 ## Software Requirements
 
@@ -31,7 +31,7 @@ To run pixel MNIST, execute,
 
 `python pixelmnist.py --p-detach=0.25 --seed=250 --save-dir=enter_experiment_dir_name_here`
 
-We experimented with multiple seeds (around 5), and picked the model with the best validation accuracy to report the final test performance. On our machine a seed of `250` gives the best validation model with test accuracy `98.5%`.
+We experimented with multiple seeds (around 5), and picked the model with the best validation accuracy to report the final test performance. On our machine a seed of `400` gives the best validation model with test accuracy `98.62%`.
 
 ## Permuted MNIST
 
@@ -41,7 +41,7 @@ To run permuted pixel MNIST, execute,
 
 `python pixelmnist.py --p-detach=0.25 --seed=150 --permute --save-dir=enter_experiment_dir_name_here`
 
-We experimented with multiple seeds (around 5), and picked the model with the best validation accuracy to report the final test performance. On our machine a seed of `150` gives the best validation model with test accuracy `92.3%`.
+We experimented with multiple seeds (around 5), and picked the model with the best validation accuracy to report the final test performance. On our machine a seed of `400` gives the best validation model with test accuracy `91.92%`.
 
 ## Image Captioning
 
