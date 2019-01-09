@@ -1,6 +1,6 @@
 # h-detach
 
-This repository contains the code used to reproduce the paper [h-detach: Modifying the LSTM Gradient Towards Better Optimization](https://arxiv.org/abs/1810.03023) 
+This repository contains the code used to reproduce the paper [h-detach: Modifying the LSTM Gradient Towards Better Optimization](https://arxiv.org/abs/1810.03023). The final report can be found here- https://github.com/dido1998/iclr_2019/tree/master/papers/TeamYakataka-ryf7ioRqFX
 
 ## Software Requirements
 
