@@ -216,6 +216,7 @@ device = torch.device('cuda')
 
 net = Net(inp_size, hid_size, out_size).to(device)
 if args.loadsaved==1:
+	print('model restored')
 	modelstate=torch.load(log_dir+'/best_model.pt')
 	net.load_state_dict(modelstate['net'].state_dict())
 
