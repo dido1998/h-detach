@@ -15,12 +15,12 @@ import os
 import glob
 import tqdm 
 parser = argparse.ArgumentParser(description='Copying Task')
-parser.add_argument('--p-detach', type=float, default=0.5, help='probability of detaching each timestep')
+parser.add_argument('--p-detach', type=float, default=0, help='probability of detaching each timestep')
 parser.add_argument('--lstm-size', type=int, default=128, help='hidden size of LSTM')
-parser.add_argument('--save-dir', type=str, default='h_detach_0.5_300_copying_newseed1', help='save dir of the results')
-parser.add_argument('--seed', type=int, default=100, help='seed value')
+parser.add_argument('--save-dir', type=str, default='vanilla_100_copying_new_seed1', help='save dir of the results')
+parser.add_argument('--seed', type=int, default=345, help='seed value')
 parser.add_argument('--clip', type=float, default=1.0, help='gradient clipping norm')
-parser.add_argument('--T', type=int, default=300, help='T')
+parser.add_argument('--T', type=int, default=100, help='T')
 parser.add_argument('--batch_size', type=int, default=100, help='batch size')
 parser.add_argument('--n_epochs', type=int, default=200, help='number of epochs')
 parser.add_argument('--lr', type=float, default=0.001, help='learning rate')
@@ -179,6 +179,7 @@ def train_model(model, epochs, criterion, optimizer):
 			print('Saving best model..')
 			state = {
 	        'net': model,
+	        'opt': optimizer,
 	        'hid_size': hid_size,
 	        'epoch':epoch,
 	    	'ctr':ctr,
@@ -197,9 +198,11 @@ def train_model(model, epochs, criterion, optimizer):
 
 print('==> Building model..')
 net = Net(inp_size, hid_size, out_size).to(device)
+optimizer = optim.Adam(net.parameters(), lr=lr)
 if args.loadsaved==1:
 	modelstate=torch.load(log_dir+'/best_model.pt')
 	net.load_state_dict(modelstate['net'].state_dict())
+	optimizer.load_state_dict(modelstate['opt'.state_dict()])
 criterion = nn.CrossEntropyLoss()
 start_epoch=0
 best_acc=0
@@ -207,7 +210,7 @@ ctr=0
 
 
 
-optimizer = optim.Adam(net.parameters(), lr=lr)
+
 
 train_model(net, n_epochs, criterion, optimizer)
 #writer.close()
