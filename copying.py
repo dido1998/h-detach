@@ -202,7 +202,7 @@ optimizer = optim.Adam(net.parameters(), lr=lr)
 if args.loadsaved==1:
 	modelstate=torch.load(log_dir+'/best_model.pt')
 	net.load_state_dict(modelstate['net'].state_dict())
-	optimizer.load_state_dict(modelstate['opt'.state_dict()])
+	optimizer.load_state_dict(modelstate['opt'].state_dict()])
 criterion = nn.CrossEntropyLoss()
 start_epoch=0
 best_acc=0
